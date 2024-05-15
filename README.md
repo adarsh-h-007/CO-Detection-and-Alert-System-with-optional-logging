@@ -21,7 +21,7 @@ Carbon Monoxide poisoning due to vehicles is rare but not impossible. Numerous i
 1. Visual Studio Code
 2. PlatformIO
 
-Personally, I’ve used PlatformIO with VS Code and that’s what I prefer. You can use the Arduino IDE if you want, but make sure that all the necessary libraries are installed. If you are using the Arduino IDE, ensure you have correctly configured the TFT_eSPI library, specifically the `user_Setup.h` file.
+Personally, I’ve used PlatformIO with VS Code and that’s what I prefer. You can use the Arduino IDE if you want, but make sure that all the necessary libraries are installed. If you are using the Arduino IDE, ensure you have correctly configured the TFT_eSPI library, specifically the `user_Setup.h` file. The code in in the src folder.
 
 ## Project Details
 We use a pair of MQ7 and DHT11 sensors, one situated on the outside and the other on the inside of the car. We display the CO levels, both outside and inside the car, on the display, so that in case any increase in levels occurs, the driver can decide whether to get outside or stay inside the car and turn on recirculation.
@@ -38,7 +38,7 @@ After making this modification, provide the connections as per the circuit diagr
 
 ![Circuit Diagram](https://github.com/adarsh-kannan/CO-Detection-and-Alert-System-with-optional-logging/blob/master/Diagrams/Circuit%20diagram.png)
 
-## Code
+## Code Details
 This code uses Google Sheets for logging the calculation data for demonstration purposes. It’s not necessary for the functioning of the project.
 
 **Very Important:** Comment out everything within the 

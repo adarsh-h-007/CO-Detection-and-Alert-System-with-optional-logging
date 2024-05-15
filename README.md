@@ -36,6 +36,8 @@ After making this modification, provide the connections as per the circuit diagr
 
 **Note:** The connection of the buzzer isn’t provided in the circuit diagram. Just connect the buzzer to the GPIO19 pin of the ESP32.
 
+![Circuit Diagram](https://github.com/adarsh-kannan/CO-Detection-and-Alert-System-with-optional-logging/blob/master/Diagrams/Circuit%20diagram.png)
+
 ## Code
 This code uses Google Sheets for logging the calculation data for demonstration purposes. It’s not necessary for the functioning of the project.
 
@@ -47,11 +49,65 @@ and
 ```c
 /* ------------------------------- End Logging ------------------------------ */
 ```
-sections if you aren’t planning on using the logging feature. Failure to do so may result in the code not working. Commenting out those sections saves program memory as well. Note: There is one such section at the very end of the code. Comment that out as well if you want.
+sections if you aren’t planning on using the logging feature. **Failure to do so may result in the code not working**. Commenting out those sections saves program memory as well. Note: There is one such section at the very end of the code. Comment that out as well if you want.
 
 But if you are planning on using the logging feature, follow this [tutorial](https://randomnerdtutorials.com/esp32-datalogging-google-sheets/). It’s very detailed. Just replace the Project ID and other relevant information in the code, and it will be up and running in no time. The screenshots of the Google Sheets are provided as well.
 
 Next, you need to provide the ‘clean air compensated resistance’ value for both sensors in the code. This is very important. The value is different for different sensors. To find the value of your sensor, run the program while keeping the sensor in clean air and note the ‘Compensated Resistance’ for that sensor from the Serial Monitor. Copy and paste this value into the code where it says ‘clean air compensated resistance’. Repeat this for the other sensor as well. This is the reference or baseline that we use to calculate further values, so do this. Otherwise, you’ll get absurd values as ppm.
+
+## Pictures
+![Our Project](https://github.com/adarsh-kannan/CO-Detection-and-Alert-System-with-optional-logging/blob/master/Pictures/Our%20Project.jpg)
+
+![Block Diagram](https://github.com/adarsh-kannan/CO-Detection-and-Alert-System-with-optional-logging/blob/master/Diagrams/Block%20Diagram.png)
+
+**More pictures can found in the Pictures folder**
+
+# Math
+In this section, I'll explain the math behind calculating the value of CO level in ppm. Most of the equations (actually all) are from the ESPHome website that I mentioned earlier. The math isn't explained on the website, only the code is given, and that too in YAML. I used ChatGPT to convert it to C and reverse-engineered the equations from that code (Honestly, ChatGPT did all the heavy lifting and I just copy-pasted it.). So what I'm trying to say is that these calculations are based on hopes and prayers, so they are not that accurate. I don't know exactly what any equations do. So basically, the stuff just works, I don't know how. Hope you can make some sense of it. If you think that there are any mistakes, feel free to let me know.
+
+We only get an analog output voltage from the sensor corresponding to the CO concentration in the air, and we use black magic to convert it to ppm. This is explained below. It's boring (or interesting? depends on your personality), so feel free to skip (or not skip) as you wish. Since I'm intellectually superior, I'm adding this below. (Please don't ask any questions (╥﹏╥)).
+
+### Calculation of Sensor Resistance
+
+The sensor resistance $R_{\text{sensor}}$ is calculated using the formula:
+
+$$ R_{\text{sensor}} = \left( \frac{\text{ADC Reading}}{\text{Reference Voltage}} \right) \times (R_{\text{low side}} - R_{\text{high side}}) $$
+
+Where:
+- $\( \text{ADC Reading} \)$ denotes the analog output voltage from the sensor.
+- $\( \text{Reference Voltage} \)$ corresponds to the voltage of the power supply, set at 5.3 volts.
+- $\( R_{\text{low side}} \)$ and $\( R_{\text{high side}} \)$ represent the resistances of the low and high side resistors respectively. $\( R_{\text{low side}} = 1 \ \text{KΩ} \)$ and $\( R_{\text{high side}} = 470 \ \text{Ω} \)$.
+
+### Temperature and Humidity Compensation
+
+To counteract the influence of environmental factors, such as temperature and humidity, we employ the following compensation equation:
+
+$$ R_{\text{compensated}} = \frac{R_{\text{sensor}}}{-0.01223333T - 0.00609615H + 1.70860897} $$
+
+Where:
+- \( T \) represents the ambient temperature in Celsius.
+- \( H \) signifies the relative humidity.
+
+### Normalization to Clean Air
+
+We normalize sensor readings concerning clean air conditions to mitigate the impact of external variables, as represented by the equation:
+
+$$ \text{Ratio} = \frac{\text{Clean Air Compensated Resistance}}{R_{\text{compensated}}} \times 100 $$
+
+Where:
+- $\( \text{Clean Air Compensated Resistance} \)$ is $\( R_{\text{compensated}} \)$ when the sensor is kept in clean air.
+
+### Natural Logarithmic Transformation
+
+A natural logarithmic transformation is applied to prepare the data for subsequent analysis and interpretation:
+
+$$ \text{Ratioln} = \ln \left( \frac{\text{Ratio}}{100} \right) $$
+
+### Calculation of Carbon Monoxide Concentration in ppm
+
+Finally, leveraging the normalized and compensated sensor data, the concentration of carbon monoxide in parts per million (ppm) is calculated using the following equation:
+
+$$ \text{ppm} = e^{-0.685204 - 2.67936 \times \text{Ratioln} - 0.488075 \times \text{Ratioln}^2 - 0.07818 \times \text{Ratioln}^3} $$
 
 ## Footnote
 I know this is a very mediocre project from a UG student, but I hope this becomes useful to someone out there. You could further enhance this project by adding an automatic power window lowering feature that lowers the power window of the car if the CO level is high inside but low outside to facilitate rapid ventilation. This idea was part of our project as well, but due to time, budget, and practicality constraints, we couldn’t implement it. We are planning on adding it in the future. I don’t know when or if that’ll be possible, but if I do, I’ll surely update it here.
